@@ -76,8 +76,8 @@ echo "M5: duplicate seq re-applies command"
 backup_file packages/robot_protocol/lib/src/session_gate.dart
 apply_mutant M5 packages/robot_protocol/lib/src/session_gate.dart \
   'return cached;' \
-  'return null;'
-run_test_expect_fail packages/robot_protocol
+  'return applyCommand\(frame\);'
+run_test_expect_fail packages/robot_protocol/test/session_gate_test.dart --plain-name "duplicate identical"
 restore packages/robot_protocol/lib/src/session_gate.dart
 
 echo "M6: estop_reset ignores moving check"

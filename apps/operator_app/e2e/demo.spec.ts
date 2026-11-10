@@ -9,6 +9,14 @@ const screenshotPath = path.resolve(
   '../../../docs/demo.png',
 );
 
+function pngDimensions(filePath: string): { width: number; height: number } {
+  const buf = fs.readFileSync(filePath);
+  return {
+    width: buf.readUInt32BE(16),
+    height: buf.readUInt32BE(20),
+  };
+}
+
 test('criterion 15 demo flow', async ({ page }) => {
   const requests: string[] = [];
   page.on('request', (req) => {
@@ -25,8 +33,15 @@ test('criterion 15 demo flow', async ({ page }) => {
   await page.getByRole('button', { name: 'Start' }).click();
   await expect(page).toHaveTitle(/running/i, { timeout: 60_000 });
 
+  await expect(page.getByText(/Speed \(m\/s\): 0\.[1-9]/)).toBeVisible({
+    timeout: 60_000,
+  });
+
   fs.mkdirSync(path.dirname(screenshotPath), { recursive: true });
-  await page.screenshot({ path: screenshotPath, fullPage: true });
+  await page.screenshot({ path: screenshotPath });
+  const dim = pngDimensions(screenshotPath);
+  expect(dim.width).toBe(1280);
+  expect(dim.height).toBe(720);
 
   await page.getByRole('button', { name: 'E-STOP' }).click();
   await expect(page).toHaveTitle(/latched/i, { timeout: 15_000 });

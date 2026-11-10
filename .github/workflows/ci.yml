@@ -25,7 +25,9 @@ jobs:
       - name: Format
         run: dart format --output=none --set-exit-if-changed packages apps tool
       - name: Analyze
-        run: flutter analyze --fatal-infos
+        run: |
+          flutter analyze --fatal-infos packages/robot_protocol packages/robot_sim packages/robot_server
+          cd apps/operator_app && flutter analyze --fatal-infos
       - name: Dart tests
         run: |
           dart test packages/robot_protocol
@@ -136,7 +138,7 @@ jobs:
         with:
           path: |
             ~/.pub-cache
-            ${{ github.workspace }}/flutter/.pub-cache
+            ${{ runner.tool_cache }}/flutter/.pub-cache
           key: flutter-pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
       - name: Build APK
         run: |

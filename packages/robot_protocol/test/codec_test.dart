@@ -4,8 +4,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:robot_protocol/robot_protocol.dart';
-import 'package:robot_sim/robot_sim.dart' as sim;
 import 'package:test/test.dart';
+
+import 'sim_stack_harness.dart';
 
 void main() {
   final testDir = Directory.current.path.endsWith('robot_protocol')
@@ -114,37 +115,18 @@ void main() {
   });
 
   test('moving robot trajectory unchanged under malformed frames', () {
-    // criterion 11 (codec): malformed protocol frames must not disturb the plant.
-    final simClean = sim.RobotSim();
-    final simNoisy = sim.RobotSim();
-    final demo = sim.SimConfig.demoWaypoints;
-    for (final sim in [simClean, simNoisy]) {
-      sim.missionSet(demo);
-      sim.heartbeat();
-      sim.missionStart();
-    }
-
-    const badFrames = <String>[
-      '{"v":2,"type":"hello"}',
-      '{"v":1,"type":"hello","extra":1}',
-      '{"v":1,"type":"mission_set","session":"x","seq":1.0,"body":{"waypoints":[[2,2]]}}',
-      '{"v":1,"type":"heartbeat","session":"x","seq":1,"body":{"bad":1}}',
-      '{"v":1,"type":"unknown","session":"x","seq":1,"body":{}}',
-      'not json',
-      '{"v":1,"type":"mission_set","session":"x","seq":1,"body":{"waypoints":[[NaN,1.0]]}}',
-    ];
-
-    for (var t = 1; t <= 50; t++) {
-      if (t % 2 == 0) {
-        simClean.heartbeat();
-        simNoisy.heartbeat();
-      }
-      for (final frame in badFrames) {
-        RobotCodec.decodeTextFrame(frame);
-      }
-      simClean.tick();
-      simNoisy.tick();
-      expect(simClean.traceLine(), simNoisy.traceLine(), reason: 'tick $t');
+    const ticks = 50;
+    final clean = SimStackHarness();
+    final noisy = SimStackHarness();
+    final cleanLines = runDemoTrace(stack: clean, ticks: ticks);
+    final noisyLines = runDemoTrace(
+      stack: noisy,
+      ticks: ticks,
+      injectMalformed: true,
+    );
+    expect(noisyLines.length, ticks);
+    for (var i = 0; i < ticks; i++) {
+      expect(noisyLines[i], cleanLines[i], reason: 'tick ${i + 1}');
     }
   });
 }

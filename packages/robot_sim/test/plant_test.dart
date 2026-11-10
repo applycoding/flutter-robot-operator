@@ -20,9 +20,10 @@ void main() {
         final s = sim.snapshot();
         final expectedX = straightLineOracleX(k);
         expect((s.x - expectedX).abs(), lessThan(1e-12));
+        if (k == 15) {
+          expect((s.v - 0.6).abs(), lessThan(1e-12));
+        }
       }
-      final s15 = sim.snapshot();
-      expect((s15.v - 0.6).abs(), lessThan(1e-12));
     });
   });
 

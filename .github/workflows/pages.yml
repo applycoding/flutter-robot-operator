@@ -44,4 +44,12 @@ jobs:
         run: |
           set -euo pipefail
           URL="${{ steps.deploy.outputs.page_url }}"
-          curl -fsSL "$URL" | grep -qi 'simulation only'
+          ok=0
+          for i in $(seq 1 12); do
+            if curl -fsSL "$URL" | grep -qi 'simulation only'; then
+              ok=1
+              break
+            fi
+            sleep 10
+          done
+          test "$ok" -eq 1

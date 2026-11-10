@@ -31,18 +31,22 @@ void main() {
       final xE = sim.snapshot().x;
       var prevV = sim.snapshot().v;
 
+      var restTick = 0;
       for (var t = e + 1; t <= e + 107; t++) {
         if (t % 2 == 0) {
           sim.heartbeat();
         }
         sim.tick();
         final s = sim.snapshot();
-        if (t <= e + 6) {
+        if (t >= e + 1 && prevV > 1e-12) {
           final drop = prevV - s.v;
           expect(drop, lessThanOrEqualTo(2.0 * 0.05 + 1e-12));
           if (s.v > 1e-12) {
             expect(drop, greaterThan(0));
           }
+        }
+        if (restTick == 0 && s.v.abs() <= 1e-12 && s.w.abs() <= 1e-12) {
+          restTick = t;
         }
         if (t >= e + 7) {
           expect(s.v, closeTo(0, 1e-12));
@@ -50,6 +54,7 @@ void main() {
         }
         prevV = s.v;
       }
+      expect(restTick, greaterThan(0));
 
       final xE7 = sim.snapshot().x;
       expect((xE7 - xE).abs(), lessThanOrEqualTo(0.10));

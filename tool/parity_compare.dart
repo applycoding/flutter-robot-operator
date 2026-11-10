@@ -1,21 +1,45 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:robot_sim/robot_sim.dart';
 
-/// Compares VM demo trace with a Node dart2js trace file (stub-friendly).
+class _TracePoint {
+  const _TracePoint({
+    required this.tick,
+    required this.x,
+    required this.y,
+    required this.mission,
+  });
+
+  final int tick;
+  final double x;
+  final double y;
+  final String mission;
+}
+
+_TracePoint _parseTraceLine(String line) {
+  final parts = line.split(' ');
+  if (parts.length < 7) {
+    throw FormatException('bad trace line: $line');
+  }
+  return _TracePoint(
+    tick: int.parse(parts[0]),
+    x: double.parse(parts[1]),
+    y: double.parse(parts[2]),
+    mission: parts[6],
+  );
+}
+
+/// Compares VM demo trace with a Node dart2js trace (criterion 13).
 Future<void> main(List<String> args) async {
   final vmOut = File(args.isNotEmpty ? args[0] : 'parity_vm.txt');
   final jsOut = File(args.length > 1 ? args[1] : 'parity_js.txt');
 
   if (!jsOut.existsSync()) {
-    stdout.writeln(
-      'parity_js.txt missing — run: dart run tool/parity_js.dart > parity_vm.txt '
-      '&& dart compile js -O2 tool/parity_js.dart -o parity_js.mjs '
-      '&& node parity_js.mjs > parity_js.txt',
-    );
-    exit(0);
+    stderr.writeln('parity_js.txt missing (dart2js / Node trace required)');
+    exit(1);
   }
 
   final sim = RobotSim();
@@ -40,25 +64,47 @@ Future<void> main(List<String> args) async {
     );
     exit(1);
   }
+
+  int? vmFirstSuccess;
+  int? jsFirstSuccess;
   var maxPose = 0.0;
+
   for (var i = 0; i < vmLines.length; i++) {
-    if (vmLines[i] != jsLines[i]) {
-      final vp = vmLines[i].split(' ');
-      final jp = jsLines[i].split(' ');
-      if (vp.length >= 3 && jp.length >= 3) {
-        final dx = (double.parse(vp[1]) - double.parse(jp[1])).abs();
-        final dy = (double.parse(vp[2]) - double.parse(jp[2])).abs();
-        maxPose = [maxPose, dx, dy].reduce((a, b) => a > b ? a : b);
-      }
-      if (maxPose > 1e-9) {
-        stderr.writeln(
-          'divergence at line ${i + 1}: ${vmLines[i]} vs ${jsLines[i]}',
-        );
-        exit(1);
-      }
+    final vp = _parseTraceLine(vmLines[i]);
+    final jp = _parseTraceLine(jsLines[i]);
+
+    if (vp.mission != jp.mission) {
+      stderr.writeln(
+        'mission mismatch tick ${vp.tick}: vm=${vp.mission} js=${jp.mission}',
+      );
+      exit(1);
+    }
+
+    if (vp.mission == 'succeeded' && vmFirstSuccess == null) {
+      vmFirstSuccess = vp.tick;
+    }
+    if (jp.mission == 'succeeded' && jsFirstSuccess == null) {
+      jsFirstSuccess = jp.tick;
+    }
+
+    final dx = (vp.x - jp.x).abs();
+    final dy = (vp.y - jp.y).abs();
+    maxPose = math.max(maxPose, math.max(dx, dy));
+    if (dx > 1e-9 || dy > 1e-9) {
+      stderr.writeln('pose mismatch tick ${vp.tick}: Δx=$dx Δy=$dy');
+      exit(1);
     }
   }
+
+  if (vmFirstSuccess != jsFirstSuccess) {
+    stderr.writeln(
+      'first success tick mismatch: vm=$vmFirstSuccess js=$jsFirstSuccess',
+    );
+    exit(1);
+  }
+
   stdout.writeln(
-    'parity ok (max pose delta $maxPose m, ${vmLines.length} lines).',
+    'parity ok (first success tick $vmFirstSuccess, max pose Δ $maxPose m, '
+    '${vmLines.length} lines).',
   );
 }

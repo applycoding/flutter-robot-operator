@@ -112,4 +112,51 @@ void main() {
     final pause = find.widgetWithText(ElevatedButton, 'Pause');
     expect(tester.widget<ElevatedButton>(pause).onPressed, isNotNull);
   });
+
+  testWidgets('resume and stop enable rules', (tester) async {
+    Future<void> pumpBar() async {
+      await tester.pumpWidget(
+        wrap(
+          controller,
+          ListenableBuilder(
+            listenable: controller,
+            builder: (context, _) => MissionBar(controller: controller),
+          ),
+        ),
+      );
+    }
+
+    final resume = () => find.widgetWithText(ElevatedButton, 'Resume');
+    final stop = () => find.widgetWithText(ElevatedButton, 'Stop');
+
+    setSnap(mission: MissionState.running);
+    await pumpBar();
+    expect(tester.widget<ElevatedButton>(resume()).onPressed, isNull);
+    expect(tester.widget<ElevatedButton>(stop()).onPressed, isNotNull);
+
+    setSnap(mission: MissionState.paused, v: 0, w: 0, hbAge: 2);
+    await pumpBar();
+    expect(tester.widget<ElevatedButton>(resume()).onPressed, isNotNull);
+    expect(tester.widget<ElevatedButton>(stop()).onPressed, isNotNull);
+
+    setSnap(mission: MissionState.paused, latched: true, v: 0, w: 0, hbAge: 1);
+    await pumpBar();
+    expect(tester.widget<ElevatedButton>(resume()).onPressed, isNull);
+
+    setSnap(mission: MissionState.paused, deadman: true, v: 0, w: 0, hbAge: 11);
+    await pumpBar();
+    expect(tester.widget<ElevatedButton>(resume()).onPressed, isNull);
+
+    setSnap(mission: MissionState.paused, deadman: true, v: 0, w: 0, hbAge: 1);
+    await pumpBar();
+    expect(tester.widget<ElevatedButton>(resume()).onPressed, isNotNull);
+
+    setSnap(mission: MissionState.idle);
+    await pumpBar();
+    expect(tester.widget<ElevatedButton>(stop()).onPressed, isNull);
+
+    setSnap(mission: MissionState.succeeded);
+    await pumpBar();
+    expect(tester.widget<ElevatedButton>(stop()).onPressed, isNull);
+  });
 }
