@@ -152,6 +152,7 @@ final class AckMessage extends ServerMessage {
     'type': 'ack',
     'seq': seq,
     'ok': true,
+    // ignore: use_null_aware_elements
     if (note != null) 'note': note!,
   };
 }

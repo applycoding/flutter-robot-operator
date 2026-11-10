@@ -4,11 +4,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:robot_protocol/robot_protocol.dart';
+import 'package:robot_sim/robot_sim.dart' as sim;
 import 'package:test/test.dart';
 
 void main() {
-  final acceptDir = Directory('test/fixtures/accept');
-  final rejectDir = Directory('test/fixtures/reject');
+  final testDir = Directory.current.path.endsWith('robot_protocol')
+      ? 'test'
+      : 'packages/robot_protocol/test';
+  final acceptDir = Directory('$testDir/fixtures/accept');
+  final rejectDir = Directory('$testDir/fixtures/reject');
 
   group('accept fixtures', () {
     for (final entity in acceptDir.listSync().whereType<File>()) {
@@ -109,12 +113,38 @@ void main() {
     });
   });
 
-  test(
-    'moving robot trajectory unchanged under malformed frames (robot_sim)',
-    () {
-      // Placeholder: full trajectory comparison is wired once robot_sim exports
-      // a deterministic step helper (PLAN criterion 11).
-    },
-    skip: 'Requires robot_sim integration',
-  );
+  test('moving robot trajectory unchanged under malformed frames', () {
+    // criterion 11 (codec): malformed protocol frames must not disturb the plant.
+    final simClean = sim.RobotSim();
+    final simNoisy = sim.RobotSim();
+    final demo = sim.SimConfig.demoWaypoints;
+    for (final sim in [simClean, simNoisy]) {
+      sim.missionSet(demo);
+      sim.heartbeat();
+      sim.missionStart();
+    }
+
+    const badFrames = <String>[
+      '{"v":2,"type":"hello"}',
+      '{"v":1,"type":"hello","extra":1}',
+      '{"v":1,"type":"mission_set","session":"x","seq":1.0,"body":{"waypoints":[[2,2]]}}',
+      '{"v":1,"type":"heartbeat","session":"x","seq":1,"body":{"bad":1}}',
+      '{"v":1,"type":"unknown","session":"x","seq":1,"body":{}}',
+      'not json',
+      '{"v":1,"type":"mission_set","session":"x","seq":1,"body":{"waypoints":[[NaN,1.0]]}}',
+    ];
+
+    for (var t = 1; t <= 50; t++) {
+      if (t % 2 == 0) {
+        simClean.heartbeat();
+        simNoisy.heartbeat();
+      }
+      for (final frame in badFrames) {
+        RobotCodec.decodeTextFrame(frame);
+      }
+      simClean.tick();
+      simNoisy.tick();
+      expect(simClean.traceLine(), simNoisy.traceLine(), reason: 'tick $t');
+    }
+  });
 }

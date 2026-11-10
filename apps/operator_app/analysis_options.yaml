@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0
+analyzer:
+  exclude:
+    - build/**
+    - web/**
+    - android/**
+include: package:flutter_lints/flutter.yaml

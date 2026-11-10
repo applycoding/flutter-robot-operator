@@ -43,7 +43,6 @@ SessionedFrame _decode(String raw) {
 void main() {
   late CountingApplier applier;
   late SessionGate gate;
-  late String session;
 
   setUp(() {
     applier = CountingApplier();
@@ -51,7 +50,7 @@ void main() {
       applyCommand: applier.apply,
       generateSessionId: () => 'session-a',
     );
-    session = gate.beginSession(tickDtS: 0.05, map: _map).session;
+    gate.beginSession(tickDtS: 0.05, map: _map);
   });
 
   final commandTypes = CommandTypeJson.sessioned.toList();
@@ -150,11 +149,6 @@ void main() {
         type: CommandType.heartbeat,
       );
       gate.handle(_decode(raw1), rawUtf8: raw1);
-      final stale = _frameJson(
-        session: 'session-a',
-        seq: 1,
-        type: CommandType.missionStart,
-      );
       // Advance with seq 2 first.
       final raw2 = _frameJson(
         session: 'session-a',

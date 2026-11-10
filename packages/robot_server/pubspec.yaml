@@ -4,4 +4,16 @@ publish_to: none
 
 environment:
   sdk: ^3.13.0
+
 resolution: workspace
+
+dependencies:
+  robot_protocol:
+    path: ../robot_protocol
+  robot_sim:
+    path: ../robot_sim
+
+dev_dependencies:
+  async: 2.13.1
+  lints: 6.1.0
+  test: 1.33.0
