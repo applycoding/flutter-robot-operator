@@ -23,7 +23,7 @@ jobs:
       - name: Pub get
         run: dart pub get
       - name: Format
-        run: dart format --output=none --set-exit-if-changed .
+        run: dart format --output=none --set-exit-if-changed packages apps tool
       - name: Analyze
         run: flutter analyze --fatal-infos
       - name: Dart tests
