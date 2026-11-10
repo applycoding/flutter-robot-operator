@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: Apache-2.0
+name: flutter_robot_operator_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+workspace:
+  - packages/robot_protocol
+  - packages/robot_sim
+  - packages/robot_server
+  - apps/operator_app
+
+dependency_overrides:
+  test_api: 0.7.15
+
+dev_dependencies:
+  robot_sim:
+    path: packages/robot_sim

@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+.dart_tool/
+.idea/
+*.iml
+build/
+**/build/
+.pub-cache/
+parity_*.txt
+parity_js.mjs
+parity_js.mjs.*
+apps/operator_app/e2e/node_modules/
+apps/operator_app/e2e/test-results/
+apps/operator_app/e2e/playwright-report/
+apps/operator_app/build/serve/

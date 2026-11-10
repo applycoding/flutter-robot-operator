@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: Apache-2.0
+name: robot_sim
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace
+
+dev_dependencies:
+  lints: 6.1.0
+  test: 1.33.0
