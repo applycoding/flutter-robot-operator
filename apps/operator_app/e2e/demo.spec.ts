@@ -28,19 +28,6 @@ test('criterion 15 demo flow', async ({ page }) => {
   fs.mkdirSync(path.dirname(screenshotPath), { recursive: true });
   await page.screenshot({ path: screenshotPath, fullPage: true });
 
-  await page
-    .getByRole('switch', { name: 'Simulate operator link loss' })
-    .check();
-  await expect(page.getByText('Deadman: true')).toBeVisible({
-    timeout: 20_000,
-  });
-  await page
-    .getByRole('switch', { name: 'Simulate operator link loss' })
-    .uncheck();
-  await page.waitForTimeout(500);
-
-  await page.getByRole('button', { name: 'Resume' }).click();
-
   await page.getByRole('button', { name: 'E-STOP' }).click();
   await expect(page).toHaveTitle(/latched/i, { timeout: 15_000 });
   await expect(page.getByText(/Speed \(m\/s\): 0\.00/)).toBeVisible({
@@ -49,7 +36,18 @@ test('criterion 15 demo flow', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Reset' }).click();
   await page.getByRole('button', { name: 'Resume' }).click();
+  await expect(page).toHaveTitle(/running/i, { timeout: 15_000 });
 
+  const linkLoss = page.getByRole('switch', {
+    name: 'Simulate operator link loss',
+  });
+  await linkLoss.click();
+  await expect(page.getByText('Deadman: true')).toBeVisible({
+    timeout: 20_000,
+  });
+  await linkLoss.click();
+
+  await page.getByRole('button', { name: 'Resume' }).click();
   await expect(page).toHaveTitle(/succeeded/i, { timeout: 180_000 });
 
   expect(requests).toEqual([]);
