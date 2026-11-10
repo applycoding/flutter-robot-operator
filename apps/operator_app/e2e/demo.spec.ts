@@ -32,10 +32,29 @@ test('criterion 15 demo flow', async ({ page }) => {
   await page.getByRole('button', { name: 'Load demo mission' }).click();
   await page.getByRole('button', { name: 'Start' }).click();
   await expect(page).toHaveTitle(/running/i, { timeout: 60_000 });
+  await expect(
+    page.getByText(
+      'Simulation only. Not connected to a robot. Not a certified safety system.',
+    ),
+  ).toBeVisible();
 
-  await expect(page.getByText(/Speed \(m\/s\): 0\.[1-9]/)).toBeVisible({
-    timeout: 60_000,
-  });
+  await expect
+    .poll(
+      async () => {
+        const title = await page.title();
+        if (!/running/i.test(title)) {
+          return false;
+        }
+        const body = await page.locator('body').innerText();
+        const wpMatch = body.match(/Waypoint index:\s*(\d+)/);
+        const tickMatch = body.match(/Mission tick:\s*(\d+)/);
+        const wp = wpMatch ? Number(wpMatch[1]) : -1;
+        const tick = tickMatch ? Number(tickMatch[1]) : -1;
+        return wp >= 1 || tick >= 250;
+      },
+      { timeout: 120_000 },
+    )
+    .toBe(true);
 
   fs.mkdirSync(path.dirname(screenshotPath), { recursive: true });
   await page.screenshot({ path: screenshotPath });

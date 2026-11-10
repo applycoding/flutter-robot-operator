@@ -27,6 +27,8 @@ class StatusPanel extends StatelessWidget {
         const SizedBox(height: 8),
         Text('Transport: ${controller.transportBadge}'),
         Text('Mission: ${snap?.mission.name ?? '—'}'),
+        Text('Mission tick: ${snap?.tick ?? '—'}'),
+        Text('Waypoint index: ${snap?.wpIndex ?? '—'}'),
         Text('Latch: ${snap?.latched == true ? 'latched' : 'clear'}'),
         Text('Deadman: ${snap?.deadman == true ? 'true' : 'false'}'),
         Text('Protective stop: ${protective ? 'obstacle_ahead' : 'clear'}'),
