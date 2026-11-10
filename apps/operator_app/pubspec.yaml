@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0
+name: operator_app
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+resolution: workspace
