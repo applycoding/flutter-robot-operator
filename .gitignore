@@ -7,6 +7,7 @@ build/
 .pub-cache/
 parity_*.txt
 parity_js.mjs
+parity_js.mjs.*
 apps/operator_app/e2e/node_modules/
 apps/operator_app/e2e/test-results/
 apps/operator_app/e2e/playwright-report/
