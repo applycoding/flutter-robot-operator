@@ -18,8 +18,8 @@ jobs:
           URL="https://storage.googleapis.com/flutter_infra_release/releases/${ARCH}"
           curl -fsSL "$URL" -o flutter.tar.xz
           echo "25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a  flutter.tar.xz" | sha256sum -c -
-          tar xf flutter.tar.xz
-          echo "$PWD/flutter/bin" >> "$GITHUB_PATH"
+          tar xf flutter.tar.xz -C "$HOME"
+          echo "$HOME/flutter/bin" >> "$GITHUB_PATH"
       - name: Pub get
         run: dart pub get
       - name: Format
@@ -52,8 +52,8 @@ jobs:
           URL="https://storage.googleapis.com/flutter_infra_release/releases/${ARCH}"
           curl -fsSL "$URL" -o flutter.tar.xz
           echo "25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a  flutter.tar.xz" | sha256sum -c -
-          tar xf flutter.tar.xz
-          echo "$PWD/flutter/bin" >> "$GITHUB_PATH"
+          tar xf flutter.tar.xz -C "$HOME"
+          echo "$HOME/flutter/bin" >> "$GITHUB_PATH"
       - name: Mutation tests
         run: |
           dart pub get
@@ -72,8 +72,8 @@ jobs:
           URL="https://storage.googleapis.com/flutter_infra_release/releases/${ARCH}"
           curl -fsSL "$URL" -o flutter.tar.xz
           echo "25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a  flutter.tar.xz" | sha256sum -c -
-          tar xf flutter.tar.xz
-          echo "$PWD/flutter/bin" >> "$GITHUB_PATH"
+          tar xf flutter.tar.xz -C "$HOME"
+          echo "$HOME/flutter/bin" >> "$GITHUB_PATH"
       - name: Flutter test
         run: |
           dart pub get
@@ -130,8 +130,8 @@ jobs:
           URL="https://storage.googleapis.com/flutter_infra_release/releases/${ARCH}"
           curl -fsSL "$URL" -o flutter.tar.xz
           echo "25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a  flutter.tar.xz" | sha256sum -c -
-          tar xf flutter.tar.xz
-          echo "$PWD/flutter/bin" >> "$GITHUB_PATH"
+          tar xf flutter.tar.xz -C "$HOME"
+          echo "$HOME/flutter/bin" >> "$GITHUB_PATH"
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
